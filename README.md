@@ -1,0 +1,2 @@
+# SSCatFacts
+Homework for SSIndex

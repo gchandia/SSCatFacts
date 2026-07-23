@@ -11,3 +11,30 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model User {
+  id               String     @id @default(uuid())
+  username         String     @unique
+  password         String
+  createdAt        DateTime   @default(now())
+  likes            UserLike[]
+}
+
+model Fact {
+  id             String     @id @default(uuid())
+  externalFactId String?    @unique
+  text           String
+  likesCount     Int        @default(0)
+  createdAt      DateTime   @default(now())
+  likes          UserLike[]
+}
+
+model UserLike {
+  id        String   @id @default(uuid())
+  userId    String
+  factId    String
+  createdAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fact Fact @relation(fields: [factId], references: [id], onDelete: Cascade)
+  @@unique([userId, factId]) // Garantiza que un usuario no dé like dos veces al mismo fact
+}

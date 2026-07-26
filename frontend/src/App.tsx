@@ -9,19 +9,16 @@ import axios from 'axios';
 function MainApp() {
   const { user, login, logout, isAuthenticated } = useAuth();
 
-  // Estados de Auth
   const [usernameInput, setUsernameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
   const [authError, setAuthError] = useState('');
 
-  // Estados de Cat Facts
   const [currentFact, setCurrentFact] = useState<string>('');
   const [loadingFact, setLoadingFact] = useState(false);
   const [likedFacts, setLikedFacts] = useState<LikedFact[]>([]);
   const [isCurrentLiked, setIsCurrentLiked] = useState(false);
 
-  // Obtener un dato aleatorio al hacer clic en el botón
   const fetchRandomFact = useCallback(async () => {
     setLoadingFact(true);
     setIsCurrentLiked(false);
@@ -35,7 +32,6 @@ function MainApp() {
     }
   }, []);
 
-  // Función para recargar la lista de likes tras interacciones de usuario
   const fetchMyLikes = useCallback(async () => {
     if (!isAuthenticated) {
       setLikedFacts([]);
@@ -49,7 +45,6 @@ function MainApp() {
     }
   }, [isAuthenticated]);
 
-  // UN SOLO useEffect DE MONTAJE: Carga inicial de Fact + Likes (si ya venía autenticado)
   useEffect(() => {
     let isMounted = true;
 
@@ -58,13 +53,11 @@ function MainApp() {
       setIsCurrentLiked(false);
 
       try {
-        // Petición del dato aleatorio
         const data = await catFactsService.getRandomFact();
         if (isMounted) {
           setCurrentFact(data.fact);
         }
 
-        // Petición de los likes si el usuario ya tenía sesión en localStorage
         if (isAuthenticated) {
           const likes = await catFactsService.getMyLikes();
           if (isMounted) {
@@ -103,7 +96,6 @@ function MainApp() {
       setPasswordInput('');
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        // Axios identifica automáticamente el tipo del error
         setAuthError(err.response?.data?.error || 'Ocurrió un error en el servidor');
       } else if (err instanceof Error) {
         setAuthError(err.message);
@@ -113,7 +105,6 @@ function MainApp() {
     }
   };
 
-  // Toggle Me Gusta
   const handleToggleLike = async () => {
     if (!isAuthenticated || !currentFact) return;
     try {
@@ -150,7 +141,6 @@ function MainApp() {
       </header>
 
       <main className="w-full max-w-2xl space-y-8">
-        {/* Formulario de Login/Registro si no está autenticado */}
         {!isAuthenticated && (
           <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
             <h2 className="text-lg font-semibold mb-4 text-center">
@@ -194,7 +184,6 @@ function MainApp() {
           </div>
         )}
 
-        {/* Tarjeta del Hecho Aleatorio */}
         <section className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg space-y-6">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Dato Curioso sobre Gatos</h2>
           <div className="min-h-[80px] flex items-center justify-center">
@@ -226,7 +215,6 @@ function MainApp() {
           </div>
         </section>
 
-        {/* Lista de Mis Likes */}
         {isAuthenticated && (
           <section className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
             <h2 className="text-lg font-semibold mb-4 text-amber-400">Mis Datos Favoritos ({likedFacts.length})</h2>

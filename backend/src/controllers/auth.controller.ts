@@ -7,8 +7,11 @@ export class AuthController {
       const { username, password } = req.body;
       const user = await AuthService.register(username, password);
       return res.status(201).json({ message: 'Usuario registrado con éxito', user });
-    } catch (error: any) {
-      return res.status(400).json({ error: error.message });
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+          return res.status(400).json({ error: error.message });
+        }
+        return res.status(400).json({ error: 'Error al registrar el usuario' });
     }
   }
 
@@ -17,8 +20,11 @@ export class AuthController {
       const { username, password } = req.body;
       const data = await AuthService.login(username, password);
       return res.json(data);
-    } catch (error: any) {
-      return res.status(401).json({ error: error.message });
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+          return res.status(401).json({ error: error.message });
+        }
+        return res.status(401).json({ error: 'Error al iniciar sesión' });
     }
   }
 }

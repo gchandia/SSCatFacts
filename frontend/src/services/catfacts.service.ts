@@ -11,6 +11,12 @@ export interface LikedFact {
   likedAt: string;
 }
 
+export interface PopularFact {
+  id: string;
+  fact: string;
+  likesCount: number;
+}
+
 export const catFactsService = {
   async getRandomFact(): Promise<CatFactResponse> {
     const response = await api.get<CatFactResponse>('/facts/fact');
@@ -24,6 +30,11 @@ export const catFactsService = {
 
   async getMyLikes(): Promise<LikedFact[]> {
     const response = await api.get<LikedFact[]>('/facts/my-likes');
+    return response.data;
+  },
+
+  async getPopularFacts(): Promise<PopularFact[]> {
+    const response = await api.get<PopularFact[]>('/facts/popular');
     return response.data;
   },
 };

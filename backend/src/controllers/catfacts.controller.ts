@@ -6,11 +6,14 @@ export class CatFactsController {
     try {
       const factData = await CatFactsService.getRandomFact();
       return res.status(200).json(factData);
-    } catch (error: any) {
-      return res.status(500).json({ error: 'Error al consultar la API de Cat Facts' });
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+          return res.status(500).json({ error: error.message });
+        }
+        return res.status(500).json({ error: 'Error al consultar la API de Cat Facts' });
     }
   }
-
+  
   static async toggleLike(req: Request, res: Response) {
     try {
       const userId = req.user?.userId;
@@ -26,8 +29,11 @@ export class CatFactsController {
 
       const result = await CatFactsService.toggleLike(userId, fact);
       return res.status(200).json(result);
-    } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+          return res.status(500).json({ error: error.message });
+        }
+        return res.status(500).json({ error: 'Error desconocido' });
     }
   }
 
@@ -40,8 +46,11 @@ export class CatFactsController {
 
       const likedFacts = await CatFactsService.getUserLikedFacts(userId);
       return res.status(200).json(likedFacts);
-    } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+          return res.status(500).json({ error: error.message });
+        }
+        return res.status(500).json({ error: 'Error desconocido' });
     }
   }
 }

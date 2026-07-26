@@ -3,7 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/useAuth';
 import { authService } from './services/auth.service';
 import { catFactsService } from './services/catfacts.service';
-import type { LikedFact } from './services/catfacts.service';
+import type { LikedFact, PopularFact } from './services/catfacts.service';
 import axios from 'axios';
 
 function MainApp() {
@@ -17,6 +17,7 @@ function MainApp() {
   const [currentFact, setCurrentFact] = useState<string>('');
   const [loadingFact, setLoadingFact] = useState(false);
   const [likedFacts, setLikedFacts] = useState<LikedFact[]>([]);
+  const [popularFacts, setPopularFacts] = useState<PopularFact[]>([]);
   const [isCurrentLiked, setIsCurrentLiked] = useState(false);
 
   const fetchRandomFact = useCallback(async () => {
@@ -45,6 +46,16 @@ function MainApp() {
     }
   }, [isAuthenticated]);
 
+  const fetchPopularFacts = useCallback(async () => {
+    try {
+      const popular = await catFactsService.getPopularFacts();
+      console.log('Populares recibidos en frontend:', popular); // 👈 Log de control
+      setPopularFacts(popular);
+    } catch (err) {
+      console.error('Error al obtener populares:', err);
+    }
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -53,9 +64,14 @@ function MainApp() {
       setIsCurrentLiked(false);
 
       try {
-        const data = await catFactsService.getRandomFact();
+        const [factData, popularData] = await Promise.all([
+          catFactsService.getRandomFact(),
+          catFactsService.getPopularFacts(),
+        ]);
+
         if (isMounted) {
-          setCurrentFact(data.fact);
+          setCurrentFact(factData.fact);
+          setPopularFacts(popularData);
         }
 
         if (isAuthenticated) {
@@ -111,8 +127,18 @@ function MainApp() {
       const res = await catFactsService.toggleLike(currentFact);
       setIsCurrentLiked(res.liked);
       fetchMyLikes();
+      fetchPopularFacts();
     } catch (err) {
       console.error('Error al dar like:', err);
+    }
+  };
+
+  const getRankBadge = (index: number) => {
+    switch (index) {
+      case 0: return '🥇';
+      case 1: return '🥈';
+      case 2: return '🥉';
+      default: return `#${index + 1}`;
     }
   };
 
@@ -213,6 +239,32 @@ function MainApp() {
               </button>
             )}
           </div>
+        </section>
+
+        <section className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
+          <h2 className="text-lg font-semibold mb-4 text-amber-400 flex items-center gap-2">
+            🔥 Top 5 de la Comunidad
+          </h2>
+          {popularFacts.length === 0 ? (
+            <p className="text-sm text-slate-500">Aún no hay hechos populares guardados.</p>
+          ) : (
+            <ul className="space-y-3">
+              {popularFacts.map((item, index) => (
+                <li
+                  key={item.id}
+                  className="p-3 bg-slate-900 rounded border border-slate-700/50 flex items-start justify-between gap-4 text-sm text-slate-300"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="text-base font-bold select-none">{getRankBadge(index)}</span>
+                    <p className="leading-snug">"{item.fact}"</p>
+                  </div>
+                  <span className="shrink-0 text-xs font-semibold bg-amber-500/10 text-amber-300 px-2.5 py-1 rounded-full border border-amber-500/20">
+                    ❤️ {item.likesCount}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
 
         {isAuthenticated && (

@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  likes     Like[]
+}
+
+model Fact {
+  id        String   @id @default(uuid())
+  factText  String   @unique
+  likes     Like[]
+  createdAt DateTime @default(now())
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  userId    String
+  factId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fact      Fact     @relation(fields: [factId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, factId])
+}

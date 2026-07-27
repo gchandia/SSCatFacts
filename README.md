@@ -150,7 +150,37 @@ Con el objetivo de seguir evolucionando la plataforma y mejorar la experiencia d
 - **Abstracción de tareas independiente del agente:** Extraer las habilidades, instrucciones y flujos de trabajo específicos de cada agente hacia una interfaz común y portable. Esta capa debería definir entradas, salidas, metadatos, permisos y contratos de ejecución compartidos, para que las mismas tareas puedan utilizarse con Codex, Claude u otras herramientas de automatización sin depender de un entorno concreto.
 - **Ampliación de la cobertura de pruebas:** Incorporar pruebas de integración para los principales flujos de la aplicación, incluidos la autenticación, el acceso a rutas protegidas, las acciones de marcar y desmarcar contenido como favorito, el sistema de clasificación por popularidad y los flujos de autenticación del frontend.
 
-## Grafo de Conocimiento
+## 📊 Grafo de Conocimiento
+
+Uso del grafo de conocimiento en el proyecto
+Los sistemas de inteligencia artificial pueden utilizar un grafo de conocimiento para representar la estructura del proyecto y las relaciones entre sus componentes. Esto permite convertir el repositorio, compuesto por archivos aislados, en un conjunto de entidades y conexiones que describen cómo funciona el sistema.
+Por ejemplo, el grafo podría representar el siguiente flujo:
+App.tsx
+→ catfacts.service.ts
+→ /api/facts/popular
+→ FactsService
+→ modelos Like y Fact
+→ relación entre User y Fact
+Esta estructura permitiría usar el grafo de conocimiento para los siguientes casos:
+- **Comprensión del código:** Identificar con rapidez qué módulos existen, qué responsabilidad tiene cada uno y cómo se relacionan entre sí.
+Análisis de impacto: Detectar qué servicios, rutas, pruebas y componentes de interfaz podrían verse afectados al modificar una entidad como Like.
+Diagnóstico de errores: Seguir un flujo completo desde una acción del usuario en el frontend hasta la ruta del backend y la consulta a la base de datos.
+Incorporación de desarrolladores y agentes: Permitir que una persona o un agente consulte archivos como nodes.json y edges.csv antes de revisar el repositorio completo.
+- **Clasificación de tareas:** Determinar si una incidencia pertenece al sistema de autenticación, al estado del frontend, a la API, a Prisma o a la base de datos.
+- **Recuperación de contexto para IA:** Seleccionar únicamente los archivos conectados con una tarea o pregunta, en lugar de enviar todo el repositorio al modelo.
+Revisión de arquitectura: Detectar conceptos duplicados, módulos sin uso, falta de pruebas, dependencias innecesarias o rutas de ejecución sospechosas.
+Por ejemplo, ante la pregunta “¿Qué archivos participan cuando un usuario marca un dato de gatos como favorito?”, el agente podría recorrer el siguiente camino:
+App.tsx
+→ frontend/src/services/catfacts.service.ts
+→ frontend/src/services/api.ts
+→ POST /api/facts/like
+→ catfacts.routes.ts
+→ authenticateToken
+→ CatFactsController.toggleLike
+→ CatFactsService.toggleLike
+→ modelos Fact y Like de Prisma
+→ PostgreSQL
+El grafo funcionaría como un mapa de navegación del código. Ayudaría al agente a localizar primero los archivos relevantes, reducir el contexto necesario y razonar con mayor precisión antes de revisar la implementación concreta.
 
 ```mermaid
 flowchart LR

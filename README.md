@@ -18,12 +18,16 @@ Asegúrate de contar con las siguientes herramientas instaladas antes de ejecuta
 ## 🛠️ Instalación y Configuración
 
 ### 1. Clonar el repositorio
-``git clone https://github.com/gchandia/SSCatFacts/
-``cd SSCatFacts
+```
+git clone https://github.com/gchandia/SSCatFacts/
+cd SSCatFacts
+```
 
 ### 2. Variables de entorno
 Crea un archivo .env dentro de la carpeta backend/ con la siguiente estructura:
+```
 PORT=3000
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/catfacts_db?schema=public"
 JWT_SECRET="tu_clave_secreta_jwt_muy_segura"
 NODE_ENV="development"
+```

@@ -6,12 +6,14 @@ const CAT_FACTS_API_URL = 'https://catfact.ninja';
 export class CatFactsService {
   static async getRandomFact() {
     const response = await axios.get(`${CAT_FACTS_API_URL}/fact`);
-    return response.data; // { fact: string, length: number }
+    return response.data;
   }
 
   static async toggleLike(userId: string, factText: string) {
-    let fact = await prisma.fact.findUnique({
+    let fact = await prisma.fact.upsert({
       where: { factText },
+      update: {},
+      create: { factText },
     });
 
     if (!fact) {

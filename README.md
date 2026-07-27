@@ -27,7 +27,7 @@ cd SSCatFacts
 Crea un archivo .env dentro de la carpeta backend/ con la siguiente estructura:
 ```
 PORT=3000
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/catfacts_db?schema=public"
+DATABASE_URL="postgresql://sscatuser:sscatpassword@localhost:5432/sscatfacts_db?schema=public"
 JWT_SECRET="tu_clave_secreta_jwt_muy_segura"
 NODE_ENV="development"
 ```
@@ -146,3 +146,106 @@ Con el objetivo de seguir evolucionando la plataforma y mejorar la experiencia d
 ### 🧪 DevOps & CI/CD
 - **Pipeline de GitHub Actions:** Configurar un flujo de CI/CD para ejecutar automáticamente la suite de pruebas (`npm test`) y el linter en cada *Pull Request*.
 - **Contenerización Completa:** Crear un `docker-compose.yml` multi-stage que levante frontend, backend y PostgreSQL con un solo comando (`docker-compose up`).
+- **Gestión centralizada de secretos:** Migrar las variables sensibles almacenadas en archivos .env locales y eliminar los valores secretos de respaldo incluidos en el código. Una herramienta como Infisical permitiría centralizar la gestión de credenciales, mantener configuraciones coherentes entre los entornos locales y del equipo, y reducir los riesgos de seguridad durante los despliegues en producción.
+- **Abstracción de tareas independiente del agente:** Extraer las habilidades, instrucciones y flujos de trabajo específicos de cada agente hacia una interfaz común y portable. Esta capa debería definir entradas, salidas, metadatos, permisos y contratos de ejecución compartidos, para que las mismas tareas puedan utilizarse con Codex, Claude u otras herramientas de automatización sin depender de un entorno concreto.
+- **Ampliación de la cobertura de pruebas:** Incorporar pruebas de integración para los principales flujos de la aplicación, incluidos la autenticación, el acceso a rutas protegidas, las acciones de marcar y desmarcar contenido como favorito, el sistema de clasificación por popularidad y los flujos de autenticación del frontend.
+
+## Grafo de Conocimiento
+
+```mermaid
+flowchart LR
+  %% User and client
+  User["User"]
+  Browser["Browser"]
+  App["frontend/src/App.tsx"]
+  AuthContext["frontend/src/context/AuthContext.tsx"]
+  UseAuth["frontend/src/context/useAuth.ts"]
+  ApiClient["frontend/src/services/api.ts"]
+  FrontAuthService["frontend/src/services/auth.service.ts"]
+  FrontFactsService["frontend/src/services/catfacts.service.ts"]
+  LocalStorage["Browser localStorage"]
+
+  %% Backend app
+  ExpressApp["backend/src/app.ts"]
+  AuthRoutes["backend/src/routes/auth.routes.ts"]
+  FactsRoutes["backend/src/routes/catfacts.routes.ts"]
+  UserRoutes["backend/src/routes/user.routes.ts"]
+  AuthController["backend/src/controllers/auth.controller.ts"]
+  CatFactsController["backend/src/controllers/catfacts.controller.ts"]
+  AuthMiddleware["backend/src/middlewares/auth.middleware.ts"]
+  AuthService["backend/src/services/auth.service.ts"]
+  CatFactsService["backend/src/services/catfacts.service.ts"]
+  FactsService["backend/src/services/facts.service.ts"]
+
+  %% Infrastructure and dependencies
+  PrismaConfigDb["backend/src/config/db.ts"]
+  PrismaLib["backend/src/lib/prisma.ts"]
+  PrismaSchema["backend/prisma/schema.prisma"]
+  Postgres["PostgreSQL"]
+  DockerCompose["docker-compose.yml"]
+  CatFactsApi["External API: catfact.ninja"]
+  JWT["jsonwebtoken"]
+  Bcrypt["bcryptjs"]
+
+  %% Data model
+  UserModel["Prisma model: User"]
+  FactModel["Prisma model: Fact"]
+  LikeModel["Prisma model: Like"]
+
+  %% Tests and quality
+  BackendTests["backend/src/services/__tests__/catfacts.service.test.ts"]
+  FrontendTests["frontend/src/__tests__/PopularFacts.test.tsx"]
+  BackendLint["backend/package.json lint"]
+  FrontendLint["frontend/package.json lint"]
+
+  User --> Browser
+  Browser --> App
+  App --> AuthContext
+  AuthContext --> UseAuth
+  AuthContext --> LocalStorage
+  ApiClient --> LocalStorage
+  App --> FrontAuthService
+  App --> FrontFactsService
+  FrontAuthService --> ApiClient
+  FrontFactsService --> ApiClient
+
+  ApiClient -->|POST /api/auth/register| AuthRoutes
+  ApiClient -->|POST /api/auth/login| AuthRoutes
+  ApiClient -->|GET /api/facts/fact| FactsRoutes
+  ApiClient -->|POST /api/facts/like| FactsRoutes
+  ApiClient -->|GET /api/facts/my-likes| FactsRoutes
+  ApiClient -->|GET /api/facts/popular| FactsRoutes
+
+  ExpressApp --> AuthRoutes
+  ExpressApp --> FactsRoutes
+  ExpressApp --> UserRoutes
+  AuthRoutes --> AuthController
+  FactsRoutes --> CatFactsController
+  FactsRoutes --> FactsService
+  FactsRoutes --> AuthMiddleware
+  AuthController --> AuthService
+  CatFactsController --> CatFactsService
+  AuthMiddleware --> JWT
+  AuthService --> JWT
+  AuthService --> Bcrypt
+
+  AuthService --> PrismaConfigDb
+  CatFactsService --> PrismaConfigDb
+  FactsService --> PrismaLib
+  PrismaConfigDb --> Postgres
+  PrismaLib --> Postgres
+  DockerCompose --> Postgres
+  PrismaSchema --> UserModel
+  PrismaSchema --> FactModel
+  PrismaSchema --> LikeModel
+  UserModel -->|has many| LikeModel
+  FactModel -->|has many| LikeModel
+  LikeModel -->|joins| UserModel
+  LikeModel -->|joins| FactModel
+
+  CatFactsService --> CatFactsApi
+  BackendTests --> FactsService
+  FrontendTests --> App
+  BackendLint --> ExpressApp
+  FrontendLint --> App
+```
